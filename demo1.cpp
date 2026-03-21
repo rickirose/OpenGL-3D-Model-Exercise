@@ -20,32 +20,235 @@
 // change this to your desired window attributes
 #define WINDOW_WIDTH  1280
 #define WINDOW_HEIGHT 720
-#define WINDOW_TITLE  "Hello Triangle"
+#define WINDOW_TITLE  "Hello Teto!"
 GLFWwindow *pWindow;
-
-// define a vertex array to hold our vertices
-float vertices[] =
-{
-    // position (x, y, z) color (r, g, b)
-    -0.50f, -0.50f, -1.00f, 1.0f, 1.0f, 1.0f,
-     0.50f, -0.50f, -1.00f, 1.0f, 1.0f, 1.0f,
-    -0.50f, 0.50f, -1.00f, 1.0f, 1.0f, 1.0f,
-
-     0.50f, 0.50f, -1.00f, 1.0f, 1.0f, 1.0f,
-    -0.50f, 0.50f, -1.00f, 1.0f, 1.0f, 1.0f,
-     0.50f, -0.50f, -1.00f, 1.0f, 1.0f, 1.0f
-
-};
 
 // define OpenGL object IDs to represent the vertex array and the shader program in the GPU
 GLuint vao;         // vertex array object (stores the render state for our vertex array)
 GLuint vbo;         // vertex buffer object (reserves GPU memory for our vertex array)
 GLuint shader;      // combined vertex and fragment shader
+int totalVertexCount = 0; // global count > static array
+
+// define all asymmetrical triangles
+float asymmetrical[] = 
+{
+    // position (x, y, z) color (r, g, b)
+    -0.168531f, 0.092728f,  0.649406f, 0.878f, 0.184f, 0.184f,
+     0.0f,  0.003457f,  0.543223f, 0.878f, 0.184f, 0.184f,         // ahoge
+     0.306651f,  0.053522f,  0.771129f, 0.878f, 0.184f, 0.184f,
+
+     0.0f, -0.380293f, 0.327921f, 0.878f, 0.184f, 0.184f,
+    -0.176f, -0.25f,  0.102765f, 0.878f, 0.184f, 0.184f,  // bangs L
+     0.107574f, -0.441076f, -0.113183f, 0.878f, 0.184f, 0.184f,
+
+     0.0f, -0.380293f, 0.327921f, 0.878f, 0.184f, 0.184f,
+     0.107574f, -0.441076f, -0.113183f, 0.878f, 0.184f, 0.184f, // bangs R
+     0.176f, -0.25f,  0.102765f, 0.878f, 0.184f, 0.184f,
+
+    -0.176f, -0.25f,  0.102765f, 0.878f, 0.184f, 0.184f,
+     0.0f, -0.358676f, -0.042289f, 0.878f, 0.184f, 0.184f,
+     0.107574f, -0.441076f, -0.113183f, 0.878f, 0.184f, 0.184f,
+
+     0.176f, -0.25f,  0.102765f, 0.878f, 0.184f, 0.184f,
+     0.0f, -0.358676f, -0.042289f, 0.878f, 0.184f, 0.184f,
+     0.107574f, -0.441076f, -0.113183f, 0.878f, 0.184f, 0.184f
+};
+
+float leftHead[] =
+{
+    // position (x, y, z) color (r, g, b)
+    // HAIR COLOR:  0.878f, 0.184f, 0.184f
+     0.0f,  0.003457f,  0.543223f, 0.878f, 0.184f, 0.184f,
+    -0.654628f, -0.247f, 0.186542f, 0.878f, 0.184f, 0.184f,  
+     0.0f, -0.380293f, 0.327921f, 0.878f, 0.184f, 0.184f,
+
+     0.0f, -0.380293f, 0.327921f, 0.878f, 0.184f, 0.184f,
+    -0.654628f, -0.247f, 0.186542f, 0.878f, 0.184f, 0.184f,
+    -0.464363f, -0.147643f, 0.163961f, 0.878f, 0.184f, 0.184f,
+
+     0.0f, -0.380293f, 0.327921f, 0.878f, 0.184f, 0.184f,
+    -0.464363f, -0.147643f, 0.163961f, 0.878f, 0.184f, 0.184f,
+    -0.523936f, 0.0f, -0.342026f, 0.878f, 0.184f, 0.184f,
+
+    -0.263946f, -0.191512f, -0.005449f, 0.878f, 0.184f, 0.184f,
+    -0.523936f, 0.0f, -0.342026f, 0.878f, 0.184f, 0.184f,
+    -0.343384f,  0.0f, -0.163961f, 0.878f, 0.184f, 0.184f,
+
+     0.0f,  0.003457f,  0.543223f, 0.878f, 0.184f, 0.184f, 
+    -0.654628f, -0.247f, 0.186542f, 0.878f, 0.184f, 0.184f,  //backside
+     0.0f, 0.435191f, 0.327921f, 0.878f, 0.184f, 0.184f,
+
+     0.0f, 0.435191f, 0.327921f, 0.878f, 0.184f, 0.184f,
+    -0.654628f, -0.247f, 0.186542f, 0.878f, 0.184f, 0.184f,
+    -0.464363f, -0.147643f, 0.163961f, 0.878f, 0.184f, 0.184f,
+
+     0.0f, 0.435191f, 0.327921f, 0.878f, 0.184f, 0.184f,
+    -0.464363f, -0.147643f,  0.163961f, 0.878f, 0.184f, 0.184f,
+    -0.523936f, 0.0f, -0.342026f, 0.878f, 0.184f, 0.184f,
+
+    -0.263946f,  0.189836f, 0.0f, 0.878f, 0.184f, 0.184f,
+    -0.523936f, 0.0f, -0.342026f, 0.878f, 0.184f, 0.184f,
+    -0.343384f,  0.0f, -0.163961f, 0.878f, 0.184f, 0.184f,
+
+    -0.263946f, 0.189836f, 0.0f, 0.878f, 0.184f, 0.184f,
+     0.0f, 0.484842f, -0.348745f, 0.878f, 0.184f, 0.184f,
+     0.0f, 0.435191f, 0.327921f, 0.878f, 0.184f, 0.184f,
+
+    -0.263946f, 0.189836f, 0.0f, 0.878f, 0.184f, 0.184f,
+     0.0f, 0.484842f, -0.348745f, 0.878f, 0.184f, 0.184f,
+     0.0f, 0.326422f, -0.281858f, 0.878f, 0.184f, 0.184f,
+
+    -0.672315f, -0.258871f, 0.353843f, 0.878f, 0.184f, 0.184f,
+    -0.934572f, -0.00783f,  0.43522f, 0.878f, 0.184f, 0.184f, // twindrill top
+    -0.674413f, -0.007531f, 0.019703f, 0.878f, 0.184f, 0.184f, 
+    
+    -0.414285f, -0.003489f, 0.43522f, 0.878f, 0.184f, 0.184f,
+    -0.672315f, -0.258871f, 0.353843f, 0.878f, 0.184f, 0.184f,
+    -0.674413f, -0.007531f, 0.019703f, 0.878f, 0.184f, 0.184f,
+
+    -0.676419f,  0.232991f, 0.397372f, 0.878f, 0.184f, 0.184f,
+    -0.674413f, -0.007531f, 0.019703f, 0.878f, 0.184f, 0.184f,
+    -0.934572f, -0.00783f,  0.43522f, 0.878f, 0.184f, 0.184f,  
+
+    -0.676419f,  0.232991f, 0.397372f, 0.878f, 0.184f, 0.184f,
+    -0.674413f, -0.007531f, 0.019703f, 0.878f, 0.184f, 0.184f,
+    -0.414285f, -0.003489f, 0.43522f, 0.878f, 0.184f, 0.184f,
+
+    -0.676419f,  0.232991f, 0.397372f, 0.878f, 0.184f, 0.184f,
+    -0.672315f, -0.258871f, 0.353843f, 0.878f, 0.184f, 0.184f,
+    -0.934572f, -0.00783f,  0.43522f, 0.878f, 0.184f, 0.184f, 
+
+    -0.673125f, -0.161781f, 0.003175f, 0.878f, 0.184f, 0.184f,
+    -0.834824f, -0.006998f, 0.053349f, 0.878f, 0.184f, 0.184f, // twindrill middle
+    -0.674419f, -0.006813f, -0.202845f, 0.878f, 0.184f, 0.184f,
+
+    -0.514032f, -0.004321f, 0.053349f, 0.878f, 0.184f, 0.184f,
+    -0.673125f, -0.161781f, 0.003175f, 0.878f, 0.184f, 0.184f,
+    -0.674419f, -0.006813f, -0.202845f, 0.878f, 0.184f, 0.184f,
+
+    -0.675656f,  0.141485f, 0.030013f, 0.878f, 0.184f, 0.184f,
+    -0.673125f, -0.161781f, 0.003175f, 0.878f, 0.184f, 0.184f,
+    -0.834824f, -0.006998f, 0.053349f, 0.878f, 0.184f, 0.184f,
+
+    -0.514032f, -0.004321f, 0.053349f, 0.878f, 0.184f, 0.184f,
+    -0.675656f,  0.141485f, 0.030013f, 0.878f, 0.184f, 0.184f,
+    -0.674419f, -0.006813f, -0.202845f, 0.878f, 0.184f, 0.184f,
+
+    -0.675656f,  0.141485f, 0.030013f, 0.878f, 0.184f, 0.184f,
+    -0.673125f, -0.161781f, 0.003175f, 0.878f, 0.184f, 0.184f,
+    -0.834824f, -0.006998f, 0.053349f, 0.878f, 0.184f, 0.184f,
+
+    -0.675656f,  0.141485f, 0.030013f, 0.878f, 0.184f, 0.184f,
+    -0.514032f, -0.004321f, 0.053349f, 0.878f, 0.184f, 0.184f,
+    -0.673125f, -0.161781f, 0.003175f, 0.878f, 0.184f, 0.184f,
+
+    -0.673766f, -0.084983f, -0.208296f, 0.878f, 0.184f, 0.184f, 
+    -0.755923f, -0.006339f, -0.182803f, 0.878f, 0.184f, 0.184f, // twindrill bottom
+    -0.674423f, -0.006246f, -0.312972f, 0.878f, 0.184f, 0.184f, 
+
+    -0.592933f, -0.004979f, -0.182803f, 0.878f, 0.184f, 0.184f,
+    -0.673766f, -0.084983f, -0.208296f, 0.878f, 0.184f, 0.184f, 
+    -0.674423f, -0.006246f, -0.312972f, 0.878f, 0.184f, 0.184f, 
+    
+    -0.675052f,  0.069103f, -0.194659f, 0.878f, 0.184f, 0.184f,
+    -0.674423f, -0.006246f, -0.312972f, 0.878f, 0.184f, 0.184f, 
+    -0.755923f, -0.006339f, -0.182803f, 0.878f, 0.184f, 0.184f,
+
+    -0.592933f, -0.004979f, -0.182803f, 0.878f, 0.184f, 0.184f,
+    -0.675052f,  0.069103f, -0.194659f, 0.878f, 0.184f, 0.184f,
+    -0.674423f, -0.006246f, -0.312972f, 0.878f, 0.184f, 0.184f, 
+
+    -0.675052f,  0.069103f, -0.194659f, 0.878f, 0.184f, 0.184f,
+    -0.673766f, -0.084983f, -0.208296f, 0.878f, 0.184f, 0.184f, 
+    -0.755923f, -0.006339f, -0.182803f, 0.878f, 0.184f, 0.184f,
+
+    -0.675052f,  0.069103f, -0.194659f, 0.878f, 0.184f, 0.184f,
+    -0.592933f, -0.004979f, -0.182803f, 0.878f, 0.184f, 0.184f,
+    -0.673766f, -0.084983f, -0.208296f, 0.878f, 0.184f, 0.184f,
+
+
+    // SKIN COLOR:  1.0f, 0.933f, 0.867f
+    -0.170837f, -0.238198f, 0.10691f, 1.0f, 0.933f, 0.867f,
+    -0.263946f, -0.191512f, -0.005449f, 1.0f, 0.933f, 0.867f,
+     0.0f, -0.358676f, -0.042289f, 1.0f, 0.933f, 0.867f, 
+
+     0.0f, -0.358676f, -0.042289f, 1.0f, 0.933f, 0.867f,
+    -0.263946f, -0.191512f, -0.005449f, 1.0f, 0.933f, 0.867f,
+     0.0f, -0.305175f, -0.351608f, 1.0f, 0.933f, 0.867f, 
+
+    -0.263946f, -0.191512f, -0.005449f, 1.0f, 0.933f, 0.867f,
+    -0.343384f,  0.0f, -0.163961f, 1.0f, 0.933f, 0.867f,
+     0.0f, -0.305175f, -0.351608f, 1.0f, 0.933f, 0.867f, 
+
+    -0.343384f,  0.0f, -0.163961f, 1.0f, 0.933f, 0.867f,
+     0.0f,  0.003457f, -0.434348f, 1.0f, 0.933f, 0.867f, 
+     0.0f, -0.305175f, -0.351608f, 1.0f, 0.933f, 0.867f, 
+
+    -0.263946f,  0.189836f, -0.005449f, 1.0f, 0.933f, 0.867f,
+    -0.343384f,  0.0f, -0.163961f, 1.0f, 0.933f, 0.867f,
+     0.0f,  0.326422f, -0.281858f, 1.0f, 0.933f, 0.867f,
+
+     0.0f,  0.326422f, -0.281858f, 1.0f, 0.933f, 0.867f, 
+    -0.343384f,  0.0f, -0.163961f, 1.0f, 0.933f, 0.867f,
+     0.0f,  0.003457f, -0.434348f, 1.0f, 0.933f, 0.867f,
+    
+
+    // EYE COLOR: 0.329f, 0.027f, 0.09f
+    -0.156485f, -0.256877f, -0.022829f, 0.329f, 0.027f, 0.09f,
+    -0.249028f, -0.185477f, -0.113493f, 0.329f, 0.027f, 0.09f,
+    -0.093429f, -0.297656f, -0.134674f, 0.329f, 0.027f, 0.09f
+};
+
+void symmetrize(std::vector<float>& vertices) 
+{
+    std::vector<float> mirror;
+    size_t listSize = vertices.size();
+    for (size_t i = 0; i < listSize; i += 18) 
+    { 
+        // instantiate triangle points
+        float* v1 = &vertices[i];
+        float* v2 = &vertices[i + 6];
+        float* v3 = &vertices[i + 12];
+
+        // mirror math: mirror on the x axis
+        auto pushMirror = [&](float* data)
+        {
+            mirror.push_back(-data[0]); // flip x
+            // retain y,z,r,g,b
+            for (int j = 1; j<6; j++) { mirror.push_back(data[j]); }
+        };
+
+        // push and swap winding order: z and y swap
+        pushMirror(v1);
+        pushMirror(v3);
+        pushMirror(v2);
+    }
+    vertices.insert(vertices.end(), mirror.begin(), mirror.end());
+}
+
 
 // called by the main function to do initial setup, such as uploading vertex
 // arrays, shader programs, etc.; returns true if successful, false otherwise
 bool setup()
 {
+    // setup vertices.
+    std::vector<float> vertices;
+    
+    // add left side to vertex array
+    int leftHeadCount = sizeof(leftHead) / sizeof(float);
+    vertices.insert(vertices.end(), leftHead, leftHead + leftHeadCount);
+
+    // add right side to vertex array
+    symmetrize(vertices);
+
+    // add asymmetrical pieces to vertex array
+    int asymCount = sizeof(asymmetrical) / sizeof(float);
+    vertices.insert(vertices.end(), asymmetrical, asymmetrical + asymCount);
+
+    // update vertex count
+    totalVertexCount = vertices.size() / 6;
+
+
     // generate the VAO and VBO objects and store their IDs in vao and vbo, respectively
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
@@ -55,7 +258,7 @@ bool setup()
 
     // upload our vertex array data to the newly-created VBO
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
     // on the VAO, register the current VBO with the following vertex attribute layout:
     // - layout location 0...
@@ -96,16 +299,26 @@ void render()
     glEnable(GL_DEPTH_TEST);
     glm::mat4 matrix;
     matrix = glm::perspective(glm::radians(60.0f),
-                            (float) WINDOW_WIDTH / WINDOW_HEIGHT,
-                            0.1f,
-                            100.0f);
+                            (float) WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f);
+
+
+
+    float time = (float)glfwGetTime();
+
+    // lil bounce for kasane teto!
+    float bounce = sin(time * 3.0f) * 0.2f;
+
+    // Spin go brrrrr
+    matrix = glm::translate(matrix, glm::vec3(0.0f, bounce, -3.0f));
+    matrix = glm::rotate(matrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    matrix = glm::rotate(matrix, time, glm::vec3(0.0f, 0.0f, 1.0f));
 
     glUniformMatrix4fv(glGetUniformLocation(shader, "matrix"),
                         1, GL_FALSE, glm::value_ptr(matrix));
 
     // ... draw our triangles
     glBindVertexArray(vao);
-    glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices) / (3 * sizeof(float)));
+    glDrawArrays(GL_TRIANGLES, 0, totalVertexCount);
 }
 
 /*****************************************************************************/
