@@ -7,10 +7,34 @@
 
 #version 330 core
 
+in float partIDv;
+in vec2 shaderTexCoord;
 in vec3 shaderColor;
+uniform float time;
+uniform sampler2D hair;
+uniform sampler2D hairD;
+uniform sampler2D skin;
+uniform sampler2D eye;
 out vec4 fragmentColor;
 
 void main()
 {
-    fragmentColor = vec4(shaderColor, 1.0f);
+    vec4 color;
+
+    if (partIDv == 0.0f)
+    {
+        color = texture(hair, shaderTexCoord);
+        vec2 displacement = vec2(shaderTexCoord.x+ color.r * sin(time * 0.3), shaderTexCoord.y + color.r *  sin(time * 0.3));
+        color = texture(hair, displacement);
+    }
+    else if (partIDv == 1.0f)
+    {
+        color = texture(skin, shaderTexCoord);
+    }
+    else if (partIDv == 2.0f)
+    {
+        color = texture(eye, shaderTexCoord);
+    }
+
+    fragmentColor = color;
 }

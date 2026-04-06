@@ -7,9 +7,10 @@
 
 #version 330 core
 
-flat in int triangleID;
+in float partIDv;
 in vec2 shaderTexCoord;
 in vec3 shaderColor;
+uniform float time;
 uniform sampler2D hair;
 uniform sampler2D hairD;
 uniform sampler2D skin;
@@ -20,20 +21,20 @@ void main()
 {
     vec4 color;
 
-    if (triangleID < 33)
+    if (partIDv == 0.0f)
     {
         color = texture(hair, shaderTexCoord);
+        vec2 displacement = vec2(shaderTexCoord.x+ color.r * sin(time * 0.3), shaderTexCoord.y + color.r *  sin(time * 0.3));
+        color = texture(hair, displacement);
     }
-    else if (triangleID < 39)
+    else if (partIDv == 1.0f)
     {
-        color = texture(skin, shaderTexCoord);
+        color = vec4(shaderColor, 1.0) * texture(skin, shaderTexCoord);
     }
-    else
+    else if (partIDv == 2.0f)
     {
         color = texture(eye, shaderTexCoord);
     }
 
     fragmentColor = color;
-
-    // fragmentColor = vec4(shaderColor, 1.0f);
 }
