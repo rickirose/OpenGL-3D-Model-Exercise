@@ -24,9 +24,11 @@
 GLFWwindow *pWindow;
 
 // define OpenGL object IDs to represent the vertex array and the shader program in the GPU
-GLuint vao;         // vertex array object (stores the render state for our vertex array)
-GLuint vbo;         // vertex buffer object (reserves GPU memory for our vertex array)
-GLuint shader;      // combined vertex and fragment shader
+GLuint vao[3];         // vertex array object (stores the render state for our vertex array)
+GLuint vbo[3];         // vertex buffer object (reserves GPU memory for our vertex array)
+GLuint shaderLeft;      // combined vertex and fragment shader
+GLuint shaderMid;      // combined vertex and fragment shader
+GLuint shaderRight;      // combined vertex and fragment shader
 int totalVertexCount = 0; // global count > static array
 
 // define all asymmetrical triangles
@@ -257,36 +259,46 @@ bool setup()
 
 
     // generate the VAO and VBO objects and store their IDs in vao and vbo, respectively
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
+    glGenVertexArrays(3, vao);
+    glGenBuffers(3, vbo);
 
-    // bind the newly-created VAO to make it the current one that OpenGL will apply state changes to
-    glBindVertexArray(vao);
+    for(int i = 0; i < 3; i++)
+    {
+        // bind the newly-created VAO to make it the current one that OpenGL will apply state changes to
+        glBindVertexArray(vao[i]);
 
-    // upload our vertex array data to the newly-created VBO
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+        // upload our vertex array data to the newly-created VBO
+        glBindBuffer(GL_ARRAY_BUFFER, vbo[i]);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
-    // on the VAO, register the current VBO with the following vertex attribute layout:
-    // - layout location 0...
-    // - ... shall consist of 3 GL_FLOATs (corresponding to x, y, and z coordinates)
-    // - ... its values will NOT be normalized (GL_FALSE)
-    // - ... the stride length is the number of bytes of all 3 floats of each vertex (hence, 3 * sizeof(float))
-    // - ... and we start at the beginning of the array (hence, (void*) 0)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) 0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) (3 * sizeof(float)));
+        // on the VAO, register the current VBO with the following vertex attribute layout:
+        // - layout location 0...
+        // - ... shall consist of 3 GL_FLOATs (corresponding to x, y, and z coordinates)
+        // - ... its values will NOT be normalized (GL_FALSE)
+        // - ... the stride length is the number of bytes of all 3 floats of each vertex (hence, 3 * sizeof(float))
+        // - ... and we start at the beginning of the array (hence, (void*) 0)
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) 0);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) (3 * sizeof(float)));
 
-    // enable the newly-created layout location 0;
-    // this shall be used by our vertex shader to read the vertex's x, y, and z
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
+        // enable the newly-created layout location 0;
+        // this shall be used by our vertex shader to read the vertex's x, y, and z
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
 
+        glBindVertexArray(0);
+    }
     // important: if you have more vertex arrays to draw, make sure you separately define them
     // with unique VAO and VBO IDs, and follow the same process above to upload them to the GPU
 
     // load our shader program
-    shader = gdevLoadShader("demo1.vs", "demo1.fs");
-    if (! shader)
+    shaderLeft = gdevLoadShader("left.vs", "left.fs");
+    if (! shaderLeft)
+        return false;
+    shaderMid = gdevLoadShader("mid.vs", "mid.fs");
+    if (! shaderMid)
+        return false;
+    shaderRight = gdevLoadShader("right.vs", "right.fs");
+    if (! shaderRight)
         return false;
 
     return true;
@@ -295,37 +307,68 @@ bool setup()
 // called by the main function to do rendering per frame
 void render()
 {
+    float time = (float)glfwGetTime();
     // clear the whole frame
-    glClearColor(0.0f, 0.3f, 0.3f, 1.0f);
+    glClearColor(1.0f*cos(time), 0.3f*sin(time), 0.3f*cos(time), 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // using our shader program...
-    glUseProgram(shader);
 
     // enable OpenGL's hidden surface removal
     glEnable(GL_DEPTH_TEST);
-    glm::mat4 matrix;
-    matrix = glm::perspective(glm::radians(60.0f),
+    glm::mat4 matrixL;
+    glm::mat4 matrixM;
+    glm::mat4 matrixR;
+    matrixL = glm::perspective(glm::radians(60.0f),
+                            (float) WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f);
+    matrixM = glm::perspective(glm::radians(60.0f),
+                            (float) WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f);
+    matrixR = glm::perspective(glm::radians(60.0f),
                             (float) WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f);
 
-
-
-    float time = (float)glfwGetTime();
 
     // lil bounce for kasane teto!
     float bounce = sin(time * 3.0f) * 0.2f;
 
     // Spin go brrrrr
-    matrix = glm::translate(matrix, glm::vec3(0.0f, bounce, -3.0f));
-    matrix = glm::rotate(matrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    matrix = glm::rotate(matrix, time, glm::vec3(0.0f, 0.0f, 1.0f));
+    glUseProgram(shaderMid);
+    matrixM = glm::translate(matrixM, glm::vec3(0.0f, bounce, -3.0f));
+    matrixM = glm::rotate(matrixM, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    matrixM = glm::rotate(matrixM, time*2, glm::vec3(0.0f, 0.0f, 1.0f));
 
-    glUniformMatrix4fv(glGetUniformLocation(shader, "matrix"),
-                        1, GL_FALSE, glm::value_ptr(matrix));
-
-    // ... draw our triangles
-    glBindVertexArray(vao);
+    glUniformMatrix4fv(glGetUniformLocation(shaderMid, "matrix"),
+                        1, GL_FALSE, glm::value_ptr(matrixM));
+    
+    glBindVertexArray(vao[0]);
     glDrawArrays(GL_TRIANGLES, 0, totalVertexCount);
+    glBindVertexArray(0);
+
+    glUseProgram(shaderLeft);
+    matrixL = glm::translate(matrixL, glm::vec3(-2.5f, -1 + bounce, -6.0f));
+    matrixL = glm::rotate(matrixL, glm::radians(45.0f*time), glm::vec3(1.0f, 1.0f, 0.0f));
+    matrixL = glm::rotate(matrixL, time*2, glm::vec3(0.0f, 0.0f, 1.0f));
+    matrixL = glm::scale(matrixL, glm::vec3(3.0f * sin(time), 2.0f*sin(time), 2.0f));
+
+    glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "matrix"),
+                        1, GL_FALSE, glm::value_ptr(matrixL));
+    
+    glBindVertexArray(vao[1]);
+    glDrawArrays(GL_TRIANGLES, 0, totalVertexCount);
+    glBindVertexArray(0);
+
+    glUseProgram(shaderRight);
+    matrixR = glm::translate(matrixR, glm::vec3(2.0f, 1.0 + bounce, -3.0f));
+    matrixR = glm::rotate(matrixR, glm::radians(-90.0f*time), glm::vec3(1.0f, 0.0f, 0.0f));
+    matrixR = glm::rotate(matrixR, time/2, glm::vec3(0.0f, 0.0f, 1.0f));
+    matrixR = glm::scale(matrixR, glm::vec3(0.5f, 0.5f, 0.5f));
+
+    glUniformMatrix4fv(glGetUniformLocation(shaderRight, "matrix"),
+                        1, GL_FALSE, glm::value_ptr(matrixR));
+    
+    glBindVertexArray(vao[2]);
+    glDrawArrays(GL_TRIANGLES, 0, totalVertexCount);
+    glBindVertexArray(0);
+    // ... draw our triangles
 }
 
 /*****************************************************************************/

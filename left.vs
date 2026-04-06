@@ -1,3 +1,4 @@
+
 /******************************************************************************
  * This is a really simple vertex shader that simply sets the output vertex's
  * position to be the same as the input.
