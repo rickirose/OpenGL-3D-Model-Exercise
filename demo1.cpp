@@ -371,32 +371,6 @@ void render()
     // enable OpenGL's hidden surface removal
     glEnable(GL_DEPTH_TEST);
 
-    // 3 models
-    glm::mat4 matrixL = glm::mat4(1.0f);
-    glm::mat4 matrixM = glm::mat4(1.0f);
-    glm::mat4 matrixR = glm::mat4(1.0f);
-    // glm::mat4 matrix;
-    // matrix = glm::perspective(glm::radians(60.0f),
-                            //(float) WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f);
-
-    // lil bounce for kasane teto!
-    float bounce = sin(time * 3.0f) * 0.2f;
-
-    // Spin go brrrrr
-    matrixM = glm::translate(matrixM, glm::vec3(0.0f, bounce, -3.0f));
-    matrixM = glm::rotate(matrixM, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    matrixM = glm::rotate(matrixM, time*2, glm::vec3(0.0f, 0.0f, 1.0f));
-
-    matrixL = glm::translate(matrixL, glm::vec3(-2.5f, -1 + bounce, -6.0f));
-    matrixL = glm::rotate(matrixL, glm::radians(45.0f*time), glm::vec3(1.0f, 1.0f, 0.0f));
-    matrixL = glm::rotate(matrixL, time*2, glm::vec3(0.0f, 0.0f, 1.0f));
-    matrixL = glm::scale(matrixL, glm::vec3(3.0f * sin(time), 2.0f*sin(time), 2.0f));
-
-    matrixR = glm::translate(matrixR, glm::vec3(2.0f, 1.0 + bounce, -3.0f));
-    matrixR = glm::rotate(matrixR, glm::radians(-90.0f*time), glm::vec3(1.0f, 0.0f, 0.0f));
-    matrixR = glm::rotate(matrixR, time/2, glm::vec3(0.0f, 0.0f, 1.0f));
-    matrixR = glm::scale(matrixR, glm::vec3(0.5f, 0.5f, 0.5f));
-
     // camera controls
     float moveSpeed = 0.05f;
     
@@ -415,20 +389,47 @@ void render()
     
     viewTransform = glm::lookAt(eyePosition, eyePosition + cameraFront, upVector);
 
-    glm::mat4 projectionTransform;
-
-    // perspective projection
+    //calculate projection matrix
     float fov = glm::radians(60.0f);
     float aspect = (float) WINDOW_WIDTH / WINDOW_HEIGHT;
     float near = 0.1f, far = 100.0f;
-    projectionTransform = glm::perspective(fov, aspect, near, far);
 
-    matrixM = projectionTransform * viewTransform * matrixM;
-    matrixL = projectionTransform * viewTransform * matrixL;
-    matrixR = projectionTransform * viewTransform * matrixR;
+    glm::mat4 projectionViewMatrix;
+    projectionViewMatrix = glm::perspective(fov, aspect, near, far); 
+    projectionViewMatrix *= glm::lookAt(eyePosition, eyePosition + cameraFront, upVector);
+
+    // lil bounce for kasane teto!
+    float bounce = sin(time * 3.0f) * 0.2f;
+
+    // ... normal and model matrices for the 3 instances
+    // middle model
+    glm::mat4 modelMatrixM = glm::mat4(1.0f);
+    modelMatrixM = glm::translate(modelMatrixM, glm::vec3(0.0f, bounce, -3.0f));
+    modelMatrixM = glm::rotate(modelMatrixM, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    modelMatrixM = glm::rotate(modelMatrixM, time*2, glm::vec3(0.0f, 0.0f, 1.0f));
+    
+    glm::mat4 normalMatrixM = glm::transpose(glm::inverse(modelMatrixM));
+
+    // left model
+    glm::mat4 modelMatrixL = glm::mat4(1.0f);
+    modelMatrixL = glm::translate(modelMatrixL, glm::vec3(-2.5f, -1 + bounce, -6.0f));
+    modelMatrixL = glm::rotate(modelMatrixL, glm::radians(45.0f*time), glm::vec3(1.0f, 1.0f, 0.0f));
+    modelMatrixL = glm::rotate(modelMatrixL, time*2, glm::vec3(0.0f, 0.0f, 1.0f));
+    modelMatrixL = glm::scale(modelMatrixL, glm::vec3(3.0f * sin(time), 2.0f*sin(time), 2.0f));
+
+    glm::mat4 normalMatrixL = glm::transpose(glm::inverse(modelMatrixL));
+
+    // right model
+    glm::mat4 modelMatrixR = glm::mat4(1.0f);
+    modelMatrixR = glm::translate(modelMatrixR, glm::vec3(2.0f, 1.0 + bounce, -3.0f));
+    modelMatrixR = glm::rotate(modelMatrixR, glm::radians(-90.0f*time), glm::vec3(1.0f, 0.0f, 0.0f));
+    modelMatrixR = glm::rotate(modelMatrixR, time/2, glm::vec3(0.0f, 0.0f, 1.0f));
+    mmodelMatrixR = glm::scale(modelMatrixR, glm::vec3(0.5f, 0.5f, 0.5f));
+
+    glm mat4 normalMatrixR = glm::transpose(glm::inverse(modelMatrixR));
 
     // ... draw our triangles
-
+    // mid shader
     glUseProgram(shaderMid);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, hairTexture);
@@ -438,17 +439,22 @@ void render()
     glBindTexture(GL_TEXTURE_2D, skinTexture);
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, eyeTexture);
+
     glUniform1f(glGetUniformLocation(shaderMid, "time"), time);
     glUniform1i(glGetUniformLocation(shaderMid, "hair"), 0);
     glUniform1i(glGetUniformLocation(shaderMid, "hairD"), 1);
     glUniform1i(glGetUniformLocation(shaderMid, "skin"), 2);
     glUniform1i(glGetUniformLocation(shaderMid, "eye"), 3);
-    glUniformMatrix4fv(glGetUniformLocation(shaderMid, "matrix"),
-                        1, GL_FALSE, glm::value_ptr(matrixM));
+
+    glUniformMatrix4fv(glGetUniformLocation(shaderMid, "projectionViewMatrix"), 1, GL_FALSE, glm::value_ptr(matrixM));
+    glUniformMatrix4fv(glGetUniformLocation(shaderMid, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrixM));
+    glUniformMatrix4fv(glGetUniformLocation(shaderMid, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalMatrixM));
+
     glBindVertexArray(vao[0]);
     glDrawArrays(GL_TRIANGLES, 0, totalVertexCount);
     glBindVertexArray(0);
 
+    // left shader
     glUseProgram(shaderLeft);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, hairTexture);
@@ -458,17 +464,22 @@ void render()
     glBindTexture(GL_TEXTURE_2D, skinTexture);
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, eyeTexture);
+
     glUniform1f(glGetUniformLocation(shaderLeft, "time"), time);
     glUniform1i(glGetUniformLocation(shaderLeft, "hair"), 0);
     glUniform1i(glGetUniformLocation(shaderLeft, "hairD"), 1);
     glUniform1i(glGetUniformLocation(shaderLeft, "skin"), 2);
     glUniform1i(glGetUniformLocation(shaderLeft, "eye"), 3);
-    glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "matrix"),
-                        1, GL_FALSE, glm::value_ptr(matrixL));
+
+    glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "projectionViewMatrix"), 1, GL_FALSE, glm::value_ptr(projectionViewMatrix));
+    glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrixL));
+    glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalMatrixL));
+
     glBindVertexArray(vao[1]);
     glDrawArrays(GL_TRIANGLES, 0, totalVertexCount);
     glBindVertexArray(0);
 
+    // right shader
     glUseProgram(shaderRight);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, hairTexture);
@@ -483,8 +494,11 @@ void render()
     glUniform1i(glGetUniformLocation(shaderRight, "hairD"), 1);
     glUniform1i(glGetUniformLocation(shaderRight, "skin"), 2);
     glUniform1i(glGetUniformLocation(shaderRight, "eye"), 3);
-    glUniformMatrix4fv(glGetUniformLocation(shaderRight, "matrix"),
-                        1, GL_FALSE, glm::value_ptr(matrixR));
+
+    glUniformMatrix4fv(glGetUniformLocation(shaderRight, "projectionViewMatrix"), 1, GL_FALSE, glm::value_ptr(projectionViewMatrix));
+    glUniformMatrix4fv(glGetUniformLocation(shaderRight, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrixR));
+    glUniformMatrix4fv(glGetUniformLocation(shaderRight, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalMatrixR));
+
     glBindVertexArray(vao[2]);
     glDrawArrays(GL_TRIANGLES, 0, totalVertexCount);
     glBindVertexArray(0);
