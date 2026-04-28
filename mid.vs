@@ -21,6 +21,13 @@ uniform mat4 projectionViewMatrix;
 uniform mat4 modelMatrix;
 uniform mat4 normalMatrix;
 
+uniform vec3 eyePosition;
+uniform vec3 lightPosition;
+uniform int shine;
+
+out vec3 camPosition;
+out vec3 lPos;
+flat out int s;
 out vec3 worldSpacePosition;
 out vec3 worldSpaceNormal;
 
@@ -32,11 +39,14 @@ out float partIDv;
 
 void main()
 {
-    gl_Position = projectionViewMatrix * vec4(vertexPosition, 1.0f);
+    gl_Position = projectionViewMatrix * modelMatrix * vec4(vertexPosition, 1.0f);
 
     worldSpacePosition = (modelMatrix * vec4(vertexPosition, 1.0f)).xyz;
     worldSpaceNormal = (normalMatrix * vec4(vertexNormal, 0.0f)).xyz;
     shaderColor = vertexColor;
     shaderTexCoord = vertexTexCoord;
     partIDv = vertexPartID;
+    camPosition = eyePosition;
+    lPos = lightPosition;
+    s = shine;
 }

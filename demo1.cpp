@@ -44,6 +44,9 @@ glm::vec3 upVector = glm::vec3(0.0f, 1.0f, 0.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::mat4 viewTransform;
 
+glm::vec3 lightPosition = glm::vec3(2.0f, 2.0f, 0.0f);
+int shine = 256;
+
 std::vector<float> vertices;
 
 // define all asymmetrical triangles
@@ -366,7 +369,7 @@ void render()
 {
     float time = (float)glfwGetTime();
     // clear the whole frame
-    glClearColor(1.0f*cos(time), 0.3f*sin(time), 0.3f*cos(time), 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // enable OpenGL's hidden surface removal
@@ -387,6 +390,19 @@ void render()
         eyePosition += moveSpeed * upVector;
     if (glfwGetKey(pWindow, GLFW_KEY_E) == GLFW_PRESS)
         eyePosition -= moveSpeed * upVector;
+
+    if (glfwGetKey(pWindow, GLFW_KEY_UP) == GLFW_PRESS)
+        lightPosition.y += moveSpeed;
+    if (glfwGetKey(pWindow, GLFW_KEY_DOWN) == GLFW_PRESS)
+        lightPosition.y -= moveSpeed;
+    if (glfwGetKey(pWindow, GLFW_KEY_LEFT) == GLFW_PRESS)
+        lightPosition.x -= moveSpeed;
+    if (glfwGetKey(pWindow, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        lightPosition.x += moveSpeed;
+    if (glfwGetKey(pWindow, GLFW_KEY_M) == GLFW_PRESS)
+        shine +=  32;
+    if (glfwGetKey(pWindow, GLFW_KEY_N) == GLFW_PRESS)
+        shine -=  32;
     
     viewTransform = glm::lookAt(eyePosition, eyePosition + cameraFront, upVector);
 
@@ -450,6 +466,9 @@ void render()
     glUniformMatrix4fv(glGetUniformLocation(shaderMid, "projectionViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrixM));
     glUniformMatrix4fv(glGetUniformLocation(shaderMid, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrixM));
     glUniformMatrix4fv(glGetUniformLocation(shaderMid, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalMatrixM));
+    glUniformMatrix4fv(glGetUniformLocation(shaderMid, "eyePosition"), 1, GL_FALSE, glm::value_ptr(eyePosition));
+    glUniformMatrix4fv(glGetUniformLocation(shaderMid, "lightPosition"), 1, GL_FALSE, glm::value_ptr(lightPosition));
+    glUniform1i(glGetUniformLocation(shaderMid, "shine"), shine);
 
     glBindVertexArray(vao[0]);
     glDrawArrays(GL_TRIANGLES, 0, totalVertexCount);
@@ -475,6 +494,9 @@ void render()
     glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "projectionViewMatrix"), 1, GL_FALSE, glm::value_ptr(projectionViewMatrix));
     glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrixL));
     glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalMatrixL));
+    glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "eyePosition"), 1, GL_FALSE, glm::value_ptr(eyePosition));
+    glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "lightPosition"), 1, GL_FALSE, glm::value_ptr(lightPosition));
+    glUniform1i(glGetUniformLocation(shaderLeft, "shine"), shine);
 
     glBindVertexArray(vao[1]);
     glDrawArrays(GL_TRIANGLES, 0, totalVertexCount);
@@ -499,6 +521,9 @@ void render()
     glUniformMatrix4fv(glGetUniformLocation(shaderRight, "projectionViewMatrix"), 1, GL_FALSE, glm::value_ptr(projectionViewMatrix));
     glUniformMatrix4fv(glGetUniformLocation(shaderRight, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrixR));
     glUniformMatrix4fv(glGetUniformLocation(shaderRight, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalMatrixR));
+    glUniformMatrix4fv(glGetUniformLocation(shaderRight, "eyePosition"), 1, GL_FALSE, glm::value_ptr(eyePosition));
+    glUniformMatrix4fv(glGetUniformLocation(shaderRight, "lightPosition"), 1, GL_FALSE, glm::value_ptr(lightPosition));
+    glUniform1i(glGetUniformLocation(shaderRight, "shine"), shine);
 
     glBindVertexArray(vao[2]);
     glDrawArrays(GL_TRIANGLES, 0, totalVertexCount);

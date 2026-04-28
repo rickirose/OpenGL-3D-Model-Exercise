@@ -12,6 +12,9 @@ in vec2 shaderTexCoord;
 in vec3 shaderColor;
 in vec3 worldSpacePosition;
 in vec3 worldSpaceNormal;
+in vec3 camPosition;
+in vec3 lPos;
+flat in int s;
 
 uniform float time;
 uniform sampler2D hair;
@@ -23,13 +26,15 @@ out vec4 fragmentColor;
 void main()
 {
     vec4 color;
-    vec3 lightPosition = vec3(2.0f, 2.0f, 0.0f);
 
-    vec3 l = normalize(lightPosition - worldSpacePosition); //light vector
+    vec3 l = normalize(lPos - worldSpacePosition); //light vector
+    vec3 c = normalize(camPosition - worldSpacePosition); //camera vector
     vec3 n = normalize(worldSpaceNormal); //normalize again
+    vec3 r = normalize(-l-2*(n*l)*n); //reflection vector
 
     float CD = max(dot(n, l), 0.0f);
-    float CA = 0.3f;
+    float CA = 0.2f;
+    float CS = pow((max(dot(r,c),0)),s) * CA;
 
 
     if (partIDv == 0.0f)
@@ -47,5 +52,5 @@ void main()
         color = texture(eye, shaderTexCoord);
     }
 
-    fragmentColor = vec4((CD + CA) * color.rgb, color.a);
+    fragmentColor = vec4((CD + CA + CS) * color.rgb, color.a);
 }
