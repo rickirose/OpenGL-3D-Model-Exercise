@@ -41,8 +41,8 @@ void main()
 {
     gl_Position = projectionViewMatrix * modelMatrix * vec4(vertexPosition, 1.0f);
 
-    worldSpacePosition = (modelMatrix * vec4(vertexPosition, 1.0f)).xyz;
-    worldSpaceNormal = (normalMatrix * vec4(vertexNormal, 0.0f)).xyz;
+    worldSpacePosition = normalize((modelMatrix * vec4(vertexPosition, 1.0f))).xyz;
+    worldSpaceNormal = normalize((normalMatrix * vec4(vertexNormal, 0.0f))).xyz;
     shaderColor = vertexColor;
     shaderTexCoord = vertexTexCoord;
     partIDv = vertexPartID;

@@ -11,6 +11,7 @@
  * Happy hacking! - eric
  * 
  * Camera controls: WASD for forward, left, back, right; QE for up and down
+ * Light controls: Arrow Keys for moving the light (along x and y axis). M and N for increasing and decreasing shininess
  *****************************************************************************/
 
 #include <iostream>
