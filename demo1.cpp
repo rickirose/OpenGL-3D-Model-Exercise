@@ -240,9 +240,9 @@ void symmetrize(std::vector<float>& vertices)
             mirror.push_back(-data[0]); // flip x
             // retain y,z,r,g,b,s,t,partID
             for (int j = 1; j < 9; j++) { mirror.push_back(data[j]); }
-            mirror.push_back(-data[9]) //flip normal x
-            mirror.push_back(data[10]) // retain norm y
-            mirror.push_back(data[11]) // retain norm z
+            mirror.push_back(-data[9]); //flip normal x
+            mirror.push_back(data[10]); // retain norm y
+            mirror.push_back(data[11]); // retain norm z
         };
 
         // push and swap winding order: z and y swap
@@ -257,12 +257,12 @@ void symmetrize(std::vector<float>& vertices)
 void computeNormals(std::vector<float>& verts)
 {
     const int STRIDE = 12;
-    for (size_t i =1; i + 3 * STRIDE <= verts.size(); i += 3 * STRIDE) // per triangle
+    for (size_t i =0; i + 3 * STRIDE <= verts.size(); i += 3 * STRIDE) // per triangle
     {
         // get vertex coords of triangles
         glm::vec3 A(verts[i+0], verts[i+1], verts[i+2]);
         glm::vec3 B(verts[i+12], verts[i+13], verts[i+14]);
-        glm::vec3 A(verts[i+24], verts[i+25], verts[i+26]);
+        glm::vec3 C(verts[i+24], verts[i+25], verts[i+26]);
 
         // normal = (B-A) x (C-A)
         glm::vec3 n = glm::normalize(glm::cross(B-A, C-A));
@@ -330,6 +330,7 @@ bool setup()
         glEnableVertexAttribArray(1);
         glEnableVertexAttribArray(2);
         glEnableVertexAttribArray(3);
+        glEnableVertexAttribArray(4);
 
         glBindVertexArray(0);
     }
@@ -424,9 +425,9 @@ void render()
     modelMatrixR = glm::translate(modelMatrixR, glm::vec3(2.0f, 1.0 + bounce, -3.0f));
     modelMatrixR = glm::rotate(modelMatrixR, glm::radians(-90.0f*time), glm::vec3(1.0f, 0.0f, 0.0f));
     modelMatrixR = glm::rotate(modelMatrixR, time/2, glm::vec3(0.0f, 0.0f, 1.0f));
-    mmodelMatrixR = glm::scale(modelMatrixR, glm::vec3(0.5f, 0.5f, 0.5f));
+    modelMatrixR = glm::scale(modelMatrixR, glm::vec3(0.5f, 0.5f, 0.5f));
 
-    glm mat4 normalMatrixR = glm::transpose(glm::inverse(modelMatrixR));
+    glm::mat4 normalMatrixR = glm::transpose(glm::inverse(modelMatrixR));
 
     // ... draw our triangles
     // mid shader
@@ -446,7 +447,7 @@ void render()
     glUniform1i(glGetUniformLocation(shaderMid, "skin"), 2);
     glUniform1i(glGetUniformLocation(shaderMid, "eye"), 3);
 
-    glUniformMatrix4fv(glGetUniformLocation(shaderMid, "projectionViewMatrix"), 1, GL_FALSE, glm::value_ptr(matrixM));
+    glUniformMatrix4fv(glGetUniformLocation(shaderMid, "projectionViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrixM));
     glUniformMatrix4fv(glGetUniformLocation(shaderMid, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrixM));
     glUniformMatrix4fv(glGetUniformLocation(shaderMid, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalMatrixM));
 

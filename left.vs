@@ -38,5 +38,5 @@ void main()
     worldSpaceNormal = (normalMatrix * vec4(vertexNormal, 0.0f)).xyz;
     shaderColor = vertexColor;
     shaderTexCoord = vertexTexCoord;
-    partIDv = partID;
+    partIDv = vertexPartID;
 }

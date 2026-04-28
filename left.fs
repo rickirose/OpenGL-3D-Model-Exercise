@@ -29,7 +29,7 @@ void main()
     vec3 n = normalize(worldSpaceNormal); //normalize again
 
     float CD = max(dot(n, l), 0.0f);
-    float CA = 0.3f
+    float CA = 0.3f;
 
 
     if (partIDv == 0.0f)
