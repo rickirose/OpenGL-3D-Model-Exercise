@@ -467,7 +467,7 @@ void render()
     glUniformMatrix4fv(glGetUniformLocation(shaderMid, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrixM));
     glUniformMatrix4fv(glGetUniformLocation(shaderMid, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalMatrixM));
     glUniformMatrix4fv(glGetUniformLocation(shaderMid, "eyePosition"), 1, GL_FALSE, glm::value_ptr(eyePosition));
-    glUniformMatrix4fv(glGetUniformLocation(shaderMid, "lightPosition"), 1, GL_FALSE, glm::value_ptr(lightPosition));
+    glUniform3fv(glGetUniformLocation(shaderMid, "lightPosition"), 1, glm::value_ptr(lightPosition));
     glUniform1i(glGetUniformLocation(shaderMid, "shine"), shine);
 
     glBindVertexArray(vao[0]);
@@ -495,7 +495,7 @@ void render()
     glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrixL));
     glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalMatrixL));
     glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "eyePosition"), 1, GL_FALSE, glm::value_ptr(eyePosition));
-    glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "lightPosition"), 1, GL_FALSE, glm::value_ptr(lightPosition));
+    glUniform3fv(glGetUniformLocation(shaderLeft, "lightPosition"), 1, glm::value_ptr(lightPosition));
     glUniform1i(glGetUniformLocation(shaderLeft, "shine"), shine);
 
     glBindVertexArray(vao[1]);
@@ -522,7 +522,7 @@ void render()
     glUniformMatrix4fv(glGetUniformLocation(shaderRight, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrixR));
     glUniformMatrix4fv(glGetUniformLocation(shaderRight, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalMatrixR));
     glUniformMatrix4fv(glGetUniformLocation(shaderRight, "eyePosition"), 1, GL_FALSE, glm::value_ptr(eyePosition));
-    glUniformMatrix4fv(glGetUniformLocation(shaderRight, "lightPosition"), 1, GL_FALSE, glm::value_ptr(lightPosition));
+    glUniform3fv(glGetUniformLocation(shaderRight, "lightPosition"), 1, glm::value_ptr(lightPosition));
     glUniform1i(glGetUniformLocation(shaderRight, "shine"), shine);
 
     glBindVertexArray(vao[2]);
