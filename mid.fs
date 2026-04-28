@@ -30,11 +30,13 @@ void main()
     vec3 l = normalize(lPos - worldSpacePosition); //light vector
     vec3 c = normalize(camPosition - worldSpacePosition); //camera vector
     vec3 n = normalize(worldSpaceNormal); //normalize again
-    vec3 r = normalize(-l-2*(n*l)*n); //reflection vector
+    vec3 r = reflect(-l, n); //reflection vector
 
-    float CD = max(dot(n, l), 0.0f);
-    float CA = 0.2f;
-    float CS = pow((max(dot(r,c),0)),s) * CA;
+    vec3 CL = vec3(1f,1f,1f);
+    vec3 CD = max(dot(n, l), 0.0f)*CL;
+    float a = 0.1;
+    vec3 CA = a * CL;
+    vec3 CS = pow((max(dot(r,c),0)),s) * CL;
 
 
     if (partIDv == 0.0f)
@@ -52,5 +54,5 @@ void main()
         color = texture(eye, shaderTexCoord);
     }
 
-    fragmentColor = vec4((CD + CA + CS) * color.rgb, color.a);
+    fragmentColor = vec4(vec3(CD + CA + CS) * vec3(color.rgb), color.a);
 }

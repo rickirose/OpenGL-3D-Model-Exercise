@@ -45,7 +45,7 @@ glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::mat4 viewTransform;
 
 glm::vec3 lightPosition = glm::vec3(2.0f, 2.0f, 0.0f);
-int shine = 256;
+int shine = 32;
 
 std::vector<float> vertices;
 
@@ -367,7 +367,7 @@ bool setup()
 // called by the main function to do rendering per frame
 void render()
 {
-    float time = (float)glfwGetTime();
+    float time = (float)glfwGetTime()/2;
     // clear the whole frame
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -400,9 +400,9 @@ void render()
     if (glfwGetKey(pWindow, GLFW_KEY_RIGHT) == GLFW_PRESS)
         lightPosition.x += moveSpeed;
     if (glfwGetKey(pWindow, GLFW_KEY_M) == GLFW_PRESS)
-        shine +=  32;
+        shine +=  1;
     if (glfwGetKey(pWindow, GLFW_KEY_N) == GLFW_PRESS)
-        shine -=  32;
+        shine -=  1;
     
     viewTransform = glm::lookAt(eyePosition, eyePosition + cameraFront, upVector);
 
@@ -463,7 +463,7 @@ void render()
     glUniform1i(glGetUniformLocation(shaderMid, "skin"), 2);
     glUniform1i(glGetUniformLocation(shaderMid, "eye"), 3);
 
-    glUniformMatrix4fv(glGetUniformLocation(shaderMid, "projectionViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrixM));
+    glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "projectionViewMatrix"), 1, GL_FALSE, glm::value_ptr(projectionViewMatrix));
     glUniformMatrix4fv(glGetUniformLocation(shaderMid, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrixM));
     glUniformMatrix4fv(glGetUniformLocation(shaderMid, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalMatrixM));
     glUniformMatrix4fv(glGetUniformLocation(shaderMid, "eyePosition"), 1, GL_FALSE, glm::value_ptr(eyePosition));
