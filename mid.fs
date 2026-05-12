@@ -53,6 +53,15 @@ void main()
     {
         color = texture(eye, shaderTexCoord);
     }
+    else if (partIDv == 4.0f)
+    {
+        color = vec4(shaderColor, 0.65f);   // 0.45 opacity
+    }
+    else
+    {
+        color = vec4(shaderColor, 1.0f);
+    }
 
-    fragmentColor = vec4(vec3(CD + CA + CS) * vec3(color.rgb), color.a);
+    vec3 lighting = clamp(CD + CA + CS, 0.0f, 1.0f);
+    fragmentColor = vec4(lighting * vec3(color.rgb), color.a);
 }
