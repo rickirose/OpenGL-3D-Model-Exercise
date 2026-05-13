@@ -29,14 +29,20 @@ GLFWwindow *pWindow;
 // define OpenGL object IDs to represent the vertex array and the shader program in the GPU
 GLuint vao[3];         // vertex array object (stores the render state for our vertex array)
 GLuint vbo[3];         // vertex buffer object (reserves GPU memory for our vertex array)
-GLuint shaderLeft;      // combined vertex and fragment shader
-GLuint shaderMid;      // combined vertex and fragment shader
-GLuint shaderRight;      // combined vertex and fragment shader
+GLuint shaderHead;      // combined vertex and fragment shader
+GLuint shaderBody;      // combined vertex and fragment shader
+GLuint shaderStage;      // combined vertex and fragment shader
 int totalVertexCount = 0; // global count > static array
+int bodyVertexCount = 0;
+int stageVertexCount = 0;
+
 GLuint hairTexture;
 GLuint hairDisplacement;
 GLuint skinTexture;
 GLuint eyeTexture;
+GLuint godrayVAO;
+GLuint godrayVBO;
+GLuint godrayShader;
 
 // define camera variables
 glm::vec3 eyePosition = glm::vec3(0.0f, 0.0f, 5.0f);
@@ -227,6 +233,299 @@ float leftHead[] =
     -0.093429f, -0.297656f, -0.134674f, 0.329f, 0.027f, 0.09f, 0.5f, 1.0f, 2.0f, 0.0f, 0.0f, 0.0f
 };
 
+float bodyVertices[] =
+{
+    // position (x, y, z) color (r, g, b) texture coordinates (s,t) partID normal (x,y,z)
+
+    // SKIN COLOR:  1.0f, 0.933f, 0.867f
+    // SHADE COLOR: 0.941f, 0.82f, 0.741f
+
+    // CLOTHES COLOR: 0.09f, 0.239f, 0.322f
+    // SHADE COLOR: 0.055f, 0.18f, 0.251f
+
+     0.221601f, 0.000716f, 0.544137f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.160451f, 0.000699f, 0.184917f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.0f, 0.206407f, 0.486083f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.0f, 0.206407f, 0.486083f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.160451f, 0.000699f, 0.184917f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, //torso F
+     0.0f, 0.174401f, 0.126862f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.160451f, 0.000699f, 0.184917f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.428787f, 0.000773f, -0.234254f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.0f, 0.174401f, 0.126862f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.0f, 0.174401f, 0.126862f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.428787f, 0.000773f, -0.234254f,  0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, //skirt F
+     0.0f, 0.461866f, -0.398405f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.221601f, 0.000716f, 0.544137f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.160451f, 0.000699f, 0.184917f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.0f, -0.205097f, 0.486083f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     
+     0.0f, -0.205097f, 0.486083f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.160451f, 0.000699f, 0.184917f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, //torso B
+     0.0f, -0.17309f, 0.126862f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.160451f, 0.000699f, 0.184917f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.428787f, 0.000773f, -0.234254f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.0f, -0.460556f, -0.398405f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.0f, -0.17309f, 0.126862f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.428787f, 0.000773f, -0.234254f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, //skirt B
+     0.0f, -0.460556f, -0.398405f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.160451f, 0.000699f, 0.184917f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.0f, -0.17309f, 0.126862f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.0f, -0.460556f, -0.398405f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.428787f, 0.000773f, -0.234254f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.0f, 0.461866f, -0.398405f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,  // bottom
+     0.0f, -0.460556f, -0.398405f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.221601f, 0.000716f, 0.544137f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.0f, 0.206407f, 0.486083f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, // top
+     0.0f, -0.205097f, 0.486083f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.683441f, 0.000843f, 0.262508f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.632041f, 0.145602f, 0.115645f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.322079f, 0.000744f, 0.485797f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.322079f, 0.000744f, 0.485797f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.632041f, 0.145602f, 0.115645f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, //sleeve top f
+     0.239702f, 0.07869f, 0.453847f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, 
+
+     0.239702f, 0.07869f, 0.453847f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.632041f, 0.145602f, 0.115645f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.220266f, 0.000716f, 0.367682f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.220266f, 0.000716f, 0.367682f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.632041f, 0.145602f, 0.115645f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, //sleeve bot f
+     0.494395f, 0.000791f, 0.043192f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.683441f, 0.000843f, 0.262508f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.63212f, -0.143945f, 0.115645f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.322079f, 0.000744f, 0.485797f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.322079f, 0.000744f, 0.485797f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.63212f, -0.143945f, 0.115645f,  0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, //sleeve top b
+     0.239745f, -0.077248f, 0.453847f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.239745f, -0.077248f, 0.453847f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.63212f, -0.143945f, 0.115645f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.220266f, 0.000716f, 0.367682f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.220266f, 0.000716f, 0.367682f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.63212f, -0.143945f, 0.115645f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,  //sleeve bot b
+     0.494395f, 0.000791f, 0.043192f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, 
+
+     0.322079f, 0.000744f, 0.485797f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.239702f, 0.07869f, 0.453847f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, 
+     0.239745f, -0.077248f, 0.453847f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.239745f, -0.077248f, 0.453847f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.239702f, 0.07869f, 0.453847f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, // sleeve top
+     0.220266f, 0.000716f, 0.367682f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.683441f, 0.000843f, 0.262508f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.632041f, 0.145602f, 0.115645f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.63212f, -0.143945f, 0.115645f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.63212f, -0.143945f, 0.115645f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.632041f, 0.145602f, 0.115645f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, // sleeve bot
+     0.494395f, 0.000791f, 0.043192f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+
+     0.782218f, 0.00087f, 0.162419f, 0.941f, 0.82f, 0.741f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.656373f, 0.134163f, 0.094839f, 0.941f, 0.82f, 0.741f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.691052f, 0.000845f, 0.201053f, 0.941f, 0.82f, 0.741f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.782218f, 0.00087f, 0.162419f, 1.0f, 0.933f, 0.867f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.766578f, 0.000865f, -0.000123f, 1.0f, 0.933f, 0.867f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.656373f, 0.134163f, 0.094839f,  1.0f, 0.933f, 0.867f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.656373f, 0.134163f, 0.094839f,  1.0f, 0.933f, 0.867f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.766578f, 0.000865f, -0.000123f, 1.0f, 0.933f, 0.867f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.608119f, 0.000822f, -0.039558f, 1.0f, 0.933f, 0.867f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.656373f, 0.134163f, 0.094839f, 0.941f, 0.82f, 0.741f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.608119f, 0.000822f, -0.039558f, 0.941f, 0.82f, 0.741f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.556465f, 0.000808f, 0.044915f, 0.941f, 0.82f, 0.741f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.691052f, 0.000845f, 0.201053f, 0.941f, 0.82f, 0.741f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.656373f, 0.134163f, 0.094839f, 0.941f, 0.82f, 0.741f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, // hand front
+     0.556465f, 0.000808f, 0.044915f, 0.941f, 0.82f, 0.741f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, 
+
+     0.782218f, 0.00087f, 0.162419f, 0.941f, 0.82f, 0.741f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.656446f, -0.132493f, 0.094839f, 0.941f, 0.82f, 0.741f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.691052f, 0.000845f, 0.201053f, 0.941f, 0.82f, 0.741f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.782218f, 0.00087f, 0.162419f, 1.0f, 0.933f, 0.867f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.766578f, 0.000865f, -0.000123f, 1.0f, 0.933f, 0.867f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.656446f, -0.132493f, 0.094839f, 1.0f, 0.933f, 0.867f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.656446f, -0.132493f, 0.094839f, 1.0f, 0.933f, 0.867f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.766578f, 0.000865f, -0.000123f, 1.0f, 0.933f, 0.867f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.608119f, 0.000822f, -0.039558f, 1.0f, 0.933f, 0.867f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.656446f, -0.132493f, 0.094839f, 0.941f, 0.82f, 0.741f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.608119f, 0.000822f, -0.039558f, 0.941f, 0.82f, 0.741f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.556465f, 0.000808f, 0.044915f, 0.941f, 0.82f, 0.741f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.691052f, 0.000845f, 0.201053f, 0.941f, 0.82f, 0.741f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.656446f, -0.132493f, 0.094839f, 0.941f, 0.82f, 0.741f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, // hand back
+     0.556465f, 0.000808f, 0.044915f,  0.941f, 0.82f, 0.741f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+
+     0.307165f, 0.000739f, -0.333068f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.24196f, 0.000722f, -0.854264f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.164414f, 0.143329f, -0.378058f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.164414f, 0.143329f, -0.378058f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.24196f, 0.000722f, -0.854264f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, // leg left f
+     0.165186f, 0.077515f, -0.895282f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.164414f, 0.143329f, -0.378058f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.165186f, 0.077515f, -0.895282f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.088332f, 0.000679f, -0.854491f,  0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.164414f, 0.143329f, -0.378058f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.088332f, 0.000679f, -0.854491f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, // leg right f 
+     0.030294f, 0.030294f, -0.426021f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.307165f, 0.000739f, -0.333068f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.24196f, 0.000722f, -0.854264f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, 
+     0.164492f, -0.141929f, -0.378058f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.164492f, -0.141929f, -0.378058f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.24196f, 0.000722f, -0.854264f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, // leg left b
+     0.165228f, -0.076114f, -0.895282f, 0.09f, 0.239f, 0.322f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.164492f, -0.141929f, -0.378058f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.165228f, -0.076114f, -0.895282f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.088332f, 0.000679f, -0.854491f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.164492f, -0.141929f, -0.378058f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.088332f, 0.000679f, -0.854491f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,  // leg right b
+     0.030294f, 0.030294f, -0.426021f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.307165f, 0.000739f, -0.333068f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.164414f, 0.143329f, -0.378058f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.164492f, -0.141929f, -0.378058f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.164492f, -0.141929f, -0.378058f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.164414f, 0.143329f, -0.378058f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, // leg top
+     0.030294f, 0.030294f, -0.426021f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.24196f, 0.000722f, -0.854264f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.165186f, 0.077515f, -0.895282f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.165228f, -0.076114f, -0.895282f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+
+     0.165228f, -0.076114f, -0.895282f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f,
+     0.165186f, 0.077515f, -0.895282f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, // leg bot
+     0.088332f, 0.000679f, -0.854491f, 0.055f, 0.18f, 0.251f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f
+};
+
+float stageVertices[] = 
+{
+    // position (x, y, z) color (r, g, b) texture coordinates (s,t) partID normal (x,y,z)
+    0.576851f, 0.576851f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.96854f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.70326f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.576851f, 0.576851f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.70326f, 0.70326f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.96854f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.70326f, 0.70326f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.576851f, 0.576851f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.96854f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.0f, 0.96854f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.576851f, 0.576851f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,// in circle f
+    0.0f, 0.703259f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.576851f, 0.576851f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.96854f, 0.0f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.70326f, 0.70326f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.70326f, 0.0f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.96854f, 0.0f, 0.0f,  0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f, // up f
+    0.576851f, 0.576851f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    
+    0.96854f, 0.0f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.70326f, 0.0f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.576851f, 0.576851f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.96854f, 0.0f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.576851f, 0.576851f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f, // down f
+    0.70326f, 0.70326f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.576851f, -0.576851f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, -0.96854f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, -0.703259f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.576851f, -0.576851f, 0.315163f,  0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.70326f, -0.70326f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, -0.96854f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.70326f, -0.70326f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.576851f, -0.576851f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, -0.96854f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.0f, -0.96854f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.576851f, -0.576851f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f, // in circle b
+    0.0f, -0.70326f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.576851f, -0.576851f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.96854f, 0.0f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.70326f, -0.70326f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.70326f, 0.0f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.96854f, 0.0f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f, // up b
+    0.576851f, -0.576851f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.96854f, 0.0f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.576851f, -0.576851f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.70326f, -0.70326f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.96854f, 0.0f, 0.0f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.70326f, 0.0f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f, // down b
+    0.576851f, -0.576851f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.576851f, -0.576851f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f, 
+    0.0f, -0.703259f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.576851f, -0.576851f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.70326f, 0.0f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.70326f, 0.0f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.576851f, 0.576851f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.0f, 0.0f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.576851f, 0.576851f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f, // top
+    0.0f, 0.70326f, 0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.576851f, -0.576851f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, -0.70326f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.576851f, -0.576851f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.70326f, 0.0f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.70326f, 0.0f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.576851f, 0.576851f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+
+    0.0f, 0.0f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.576851f, 0.576851f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.703259f, -0.315163f, 0.878f, 0.184f, 0.184f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f
+};
+
 void symmetrize(std::vector<float>& vertices) 
 {
     std::vector<float> mirror;
@@ -281,10 +580,58 @@ void computeNormals(std::vector<float>& verts)
     }
 }
 
+float godrayVertices[] =
+{
+    0.0f, 0.0f, 0.0f, 0.5f, 1.0f,
+
+    -1.5f, -4.0f, -1.5f, 0.0f, 0.0f,
+    1.5f, -4.0f, -1.5f, 1.0f, 0.0f,
+
+    0.0f, 0.0f, 0.0f, 0.5f, 1.0f,
+
+    1.5f, -4.0f, -1.5f, 0.0f, 0.0f,
+    1.5f, -4.0f, 1.5f, 1.0f, 0.0f,
+
+    0.0f, 0.0f, 0.0f, 0.5f, 1.0f,
+
+    1.5f, -4.0f, 1.5f, 0.0f, 0.0f,
+    -1.5f, -4.0f, 1.5f, 1.0f, 0.0f,
+
+    0.0f, 0.0f, 0.0f, 0.5f, 1.0f,
+
+    -1.5f, -4.0f, 1.5f, 0.0f, 0.0f,
+    -1.5f, -4.0f, -1.5f, 1.0f, 0.0f,
+};
+
+void DrawGodRay(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 color, float intensity, glm::mat4 projectionViewMatrix)
+{
+    glUniform3fv(glGetUniformLocation(godrayShader, "rayColor"), 1, glm::value_ptr(color));
+    glUniform1f(glGetUniformLocation(godrayShader, "intensity"), intensity);
+    
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, position);
+    model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1,0,0));
+    model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0,1,0));
+    model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0,0,1));
+    model = glm::scale(model, scale);
+    
+    glUniformMatrix4fv(glGetUniformLocation(godrayShader, "projectionViewMatrix"), 1, GL_FALSE, glm::value_ptr(projectionViewMatrix));
+    glUniformMatrix4fv(glGetUniformLocation(godrayShader, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(model));
+    glBindVertexArray(godrayVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 12);
+    glBindVertexArray(0);
+}
+
+
 // called by the main function to do initial setup, such as uploading vertex
 // arrays, shader programs, etc.; returns true if successful, false otherwise
 bool setup()
 {
+    // generate the VAO and VBO objects and store their IDs in vao and vbo, respectively
+    glGenVertexArrays(3, vao);
+    glGenBuffers(3, vbo);
+
+    // HEAD ===========================================================================================
     // add left side to vertex array
     int leftHeadCount = sizeof(leftHead) / sizeof(float);
     vertices.insert(vertices.end(), leftHead, leftHead + leftHeadCount);
@@ -302,42 +649,78 @@ bool setup()
     // update vertex count (stride=12)
     totalVertexCount = vertices.size() / 12;
 
-    // generate the VAO and VBO objects and store their IDs in vao and vbo, respectively
-    glGenVertexArrays(3, vao);
-    glGenBuffers(3, vbo);
+    glBindVertexArray(vao[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void*) 0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void*) (3 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void*) (6 * sizeof(float)));
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void*) (8 * sizeof(float)));
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void*) (9 * sizeof(float))); //normal: 3floats, offset 9
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
+    glEnableVertexAttribArray(4);
+    glBindVertexArray(0);
 
-    for(int i = 0; i < 3; i++)
-    {
-        // bind the newly-created VAO to make it the current one that OpenGL will apply state changes to
-        glBindVertexArray(vao[i]);
+    // BODY ===========================================================================================
+    std::vector<float> bodyVerts(bodyVertices, bodyVertices + sizeof(bodyVertices)/sizeof(float));
 
-        // upload our vertex array data to the newly-created VBO
-        glBindBuffer(GL_ARRAY_BUFFER, vbo[i]);
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
-    
-            // on the VAO, register the current VBO with the following vertex attribute layout:
-        // - layout location 0...
-        // - ... shall consist of 3 GL_FLOATs (corresponding to x, y, and z coordinates)
-        // - ... its values will NOT be normalized (GL_FALSE)
-        // - ... the stride length is the number of bytes of all 3 floats of each vertex (hence, 3 * sizeof(float))
-        // - ... and we start at the beginning of the array (hence, (void*) 0)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void*) 0);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void*) (3 * sizeof(float)));
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void*) (6 * sizeof(float)));
-        glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void*) (8 * sizeof(float)));
-        glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void*) (9 * sizeof(float))); //normal: 3floats, offset 9
-        
+    symmetrize(bodyVerts);
+    computeNormals(bodyVerts);
+    bodyVertexCount = bodyVerts.size() / 12;
 
-        // enable the newly-created layout location 0;
-        // this shall be used by our vertex shader to read the vertex's x, y, and z
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-        glEnableVertexAttribArray(2);
-        glEnableVertexAttribArray(3);
-        glEnableVertexAttribArray(4);
+    glBindVertexArray(vao[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+    glBufferData(GL_ARRAY_BUFFER, bodyVerts.size() * sizeof(float),
+                 bodyVerts.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 12*sizeof(float), (void*)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 12*sizeof(float), (void*)(3*sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 12*sizeof(float), (void*)(6*sizeof(float)));
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 12*sizeof(float), (void*)(8*sizeof(float)));
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 12*sizeof(float), (void*)(9*sizeof(float)));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
+    glEnableVertexAttribArray(4);
+    glBindVertexArray(0);
 
-        glBindVertexArray(0);
-    }
+    // STAGE ===========================================================================================
+    std::vector<float> stageVerts(stageVertices,stageVertices + sizeof(stageVertices)/sizeof(float));
+
+    symmetrize(stageVerts);
+    computeNormals(stageVerts);
+    stageVertexCount = stageVerts.size() / 12;
+
+    glBindVertexArray(vao[2]);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
+    glBufferData(GL_ARRAY_BUFFER, stageVerts.size() * sizeof(float),
+                 stageVerts.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 12*sizeof(float), (void*)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 12*sizeof(float), (void*)(3*sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 12*sizeof(float), (void*)(6*sizeof(float)));
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 12*sizeof(float), (void*)(8*sizeof(float)));
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 12*sizeof(float), (void*)(9*sizeof(float)));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
+    glEnableVertexAttribArray(4);
+    glBindVertexArray(0);
+
+    // God Rays
+    glGenVertexArrays(1, &godrayVAO);
+    glGenBuffers(1, &godrayVBO);
+    glBindVertexArray(godrayVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, godrayVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(godrayVertices), godrayVertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) 0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glBindVertexArray(0);
 
     // important: if you have more vertex arrays to draw, make sure you separately define them
     // with unique VAO and VBO IDs, and follow the same process above to upload them to the GPU
@@ -352,15 +735,14 @@ bool setup()
     if(!eyeTexture) return false;
     
     // load our shader program
-    shaderLeft = gdevLoadShader("left.vs", "left.fs");
-    if (! shaderLeft)
-        return false;
-    shaderMid = gdevLoadShader("mid.vs", "mid.fs");
-    if (! shaderMid)
-        return false;
-    shaderRight = gdevLoadShader("right.vs", "right.fs");
-    if (! shaderRight)
-        return false;
+    shaderHead = gdevLoadShader("mid.vs", "mid.fs");
+    if (!shaderHead) return false;
+    shaderBody = gdevLoadShader("mid.vs", "mid.fs"); 
+    if (!shaderBody) return false;
+    shaderStage = gdevLoadShader("mid.vs", "mid.fs"); 
+    if (!shaderStage) return false;
+    godrayShader = gdevLoadShader("godray.vs", "godray.fs");
+    if(!godrayShader) return false;
 
     return true;
 }
@@ -419,36 +801,36 @@ void render()
     // lil bounce for kasane teto!
     float bounce = sin(time * 3.0f) * 0.2f;
 
-    // ... normal and model matrices for the 3 instances
-    // middle model
-    glm::mat4 modelMatrixM = glm::mat4(1.0f);
-    modelMatrixM = glm::translate(modelMatrixM, glm::vec3(0.0f, bounce, -3.0f));
-    modelMatrixM = glm::rotate(modelMatrixM, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    modelMatrixM = glm::rotate(modelMatrixM, time*2, glm::vec3(0.0f, 0.0f, 1.0f));
+    // HEAD ===========================================================================================
+    glm::mat4 modelHead = glm::mat4(1.0f);
     
-    glm::mat4 normalMatrixM = glm::transpose(glm::inverse(modelMatrixM));
+    modelHead = glm::translate(modelHead, glm::vec3(0.0f, bounce, -3.0f));
+    modelHead = glm::scale(modelHead, glm::vec3(1.8f, 1.8f, 1.8f)); // scale up
+    modelHead = glm::rotate(modelHead, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    modelHead = glm::rotate(modelHead, time * 2, glm::vec3(0.0f, 0.0f, 1.0f));
+    glm::mat4 normalHead = glm::transpose(glm::inverse(modelHead));
 
-    // left model
-    glm::mat4 modelMatrixL = glm::mat4(1.0f);
-    modelMatrixL = glm::translate(modelMatrixL, glm::vec3(-2.5f, -1 + bounce, -6.0f));
-    modelMatrixL = glm::rotate(modelMatrixL, glm::radians(45.0f*time), glm::vec3(1.0f, 1.0f, 0.0f));
-    modelMatrixL = glm::rotate(modelMatrixL, time*2, glm::vec3(0.0f, 0.0f, 1.0f));
-    modelMatrixL = glm::scale(modelMatrixL, glm::vec3(3.0f * sin(time), 2.0f*sin(time), 2.0f));
+    // BODY ===========================================================================================
+    glm::mat4 modelBody = glm::mat4(1.0f);
+    
+    modelBody = glm::translate(modelBody, glm::vec3(0.0f, bounce - 1.6f, -3.0f)); // -1.6= distance below head
+    modelBody = glm::scale(modelBody, glm::vec3(1.8f, 1.8f, 1.8f)); // scale up
+    modelBody = glm::rotate(modelBody, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    modelBody = glm::rotate(modelBody, time * 2, glm::vec3(0.0f, 0.0f, 1.0f)); // spin with  head
+    glm::mat4 normalBody = glm::transpose(glm::inverse(modelBody));
 
-    glm::mat4 normalMatrixL = glm::transpose(glm::inverse(modelMatrixL));
-
-    // right model
-    glm::mat4 modelMatrixR = glm::mat4(1.0f);
-    modelMatrixR = glm::translate(modelMatrixR, glm::vec3(2.0f, 1.0 + bounce, -3.0f));
-    modelMatrixR = glm::rotate(modelMatrixR, glm::radians(-90.0f*time), glm::vec3(1.0f, 0.0f, 0.0f));
-    modelMatrixR = glm::rotate(modelMatrixR, time/2, glm::vec3(0.0f, 0.0f, 1.0f));
-    modelMatrixR = glm::scale(modelMatrixR, glm::vec3(0.5f, 0.5f, 0.5f));
-
-    glm::mat4 normalMatrixR = glm::transpose(glm::inverse(modelMatrixR));
-
+    // STAGE ===========================================================================================
+    glm::mat4 modelStage = glm::mat4(1.0f);
+    
+    modelStage = glm::translate(modelStage, glm::vec3(0.0f, bounce - 3.8f, -3.0f)); // -3.8 = distance below head
+    modelStage = glm::scale(modelStage, glm::vec3(1.8f, 1.8f, 1.8f)); 
+    modelStage = glm::rotate(modelStage, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    modelStage = glm::rotate(modelStage, time * 2, glm::vec3(0.0f, 0.0f, 1.0f)); // spin with  head
+    glm::mat4 normalStage = glm::transpose(glm::inverse(modelStage));
+    
     // ... draw our triangles
-    // mid shader
-    glUseProgram(shaderMid);
+    // Draw HEAD ===========================================================================================
+    glUseProgram(shaderHead);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, hairTexture);
     glActiveTexture(GL_TEXTURE1);
@@ -458,77 +840,81 @@ void render()
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, eyeTexture);
 
-    glUniform1f(glGetUniformLocation(shaderMid, "time"), time);
-    glUniform1i(glGetUniformLocation(shaderMid, "hair"), 0);
-    glUniform1i(glGetUniformLocation(shaderMid, "hairD"), 1);
-    glUniform1i(glGetUniformLocation(shaderMid, "skin"), 2);
-    glUniform1i(glGetUniformLocation(shaderMid, "eye"), 3);
+    glUniform1f(glGetUniformLocation(shaderHead, "time"), time);
+    glUniform1i(glGetUniformLocation(shaderHead, "hair"), 0);
+    glUniform1i(glGetUniformLocation(shaderHead, "hairD"), 1);
+    glUniform1i(glGetUniformLocation(shaderHead, "skin"), 2);
+    glUniform1i(glGetUniformLocation(shaderHead, "eye"), 3);
 
-    glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "projectionViewMatrix"), 1, GL_FALSE, glm::value_ptr(projectionViewMatrix));
-    glUniformMatrix4fv(glGetUniformLocation(shaderMid, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrixM));
-    glUniformMatrix4fv(glGetUniformLocation(shaderMid, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalMatrixM));
-    glUniformMatrix4fv(glGetUniformLocation(shaderMid, "eyePosition"), 1, GL_FALSE, glm::value_ptr(eyePosition));
-    glUniform3fv(glGetUniformLocation(shaderMid, "lightPosition"), 1, glm::value_ptr(lightPosition));
-    glUniform1i(glGetUniformLocation(shaderMid, "shine"), shine);
+    glUniformMatrix4fv(glGetUniformLocation(shaderHead, "projectionViewMatrix"), 1, GL_FALSE, glm::value_ptr(projectionViewMatrix));
+    glUniformMatrix4fv(glGetUniformLocation(shaderHead, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelHead));
+    glUniformMatrix4fv(glGetUniformLocation(shaderHead, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalHead));
+    glUniform3fv(glGetUniformLocation(shaderHead, "eyePosition"), 1, glm::value_ptr(eyePosition));
+    glUniform3fv(glGetUniformLocation(shaderHead, "lightPosition"), 1, glm::value_ptr(lightPosition));
+    glUniform1i(glGetUniformLocation(shaderHead, "shine"), shine);
 
     glBindVertexArray(vao[0]);
     glDrawArrays(GL_TRIANGLES, 0, totalVertexCount);
     glBindVertexArray(0);
 
-    // left shader
-    glUseProgram(shaderLeft);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, hairTexture);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, hairDisplacement);
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, skinTexture);
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, eyeTexture);
-
-    glUniform1f(glGetUniformLocation(shaderLeft, "time"), time);
-    glUniform1i(glGetUniformLocation(shaderLeft, "hair"), 0);
-    glUniform1i(glGetUniformLocation(shaderLeft, "hairD"), 1);
-    glUniform1i(glGetUniformLocation(shaderLeft, "skin"), 2);
-    glUniform1i(glGetUniformLocation(shaderLeft, "eye"), 3);
-
-    glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "projectionViewMatrix"), 1, GL_FALSE, glm::value_ptr(projectionViewMatrix));
-    glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrixL));
-    glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalMatrixL));
-    glUniformMatrix4fv(glGetUniformLocation(shaderLeft, "eyePosition"), 1, GL_FALSE, glm::value_ptr(eyePosition));
-    glUniform3fv(glGetUniformLocation(shaderLeft, "lightPosition"), 1, glm::value_ptr(lightPosition));
-    glUniform1i(glGetUniformLocation(shaderLeft, "shine"), shine);
-
+    // Draw BODY ===========================================================================================
+    glUseProgram(shaderBody);
+    glUniformMatrix4fv(glGetUniformLocation(shaderBody, "projectionViewMatrix"), 1, GL_FALSE, glm::value_ptr(projectionViewMatrix));
+    glUniformMatrix4fv(glGetUniformLocation(shaderBody, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelBody));
+    glUniformMatrix4fv(glGetUniformLocation(shaderBody, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalBody));
+    glUniform3fv(glGetUniformLocation(shaderBody, "eyePosition"), 1, glm::value_ptr(eyePosition));
+    glUniform3fv(glGetUniformLocation(shaderBody, "lightPosition"), 1, glm::value_ptr(lightPosition));
+    glUniform1i(glGetUniformLocation(shaderBody, "shine"), shine);
     glBindVertexArray(vao[1]);
-    glDrawArrays(GL_TRIANGLES, 0, totalVertexCount);
+    glDrawArrays(GL_TRIANGLES, 0, bodyVertexCount); 
     glBindVertexArray(0);
 
-    // right shader
-    glUseProgram(shaderRight);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, hairTexture);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, hairDisplacement);
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, skinTexture);
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, eyeTexture);
-    glUniform1f(glGetUniformLocation(shaderRight, "time"), time);
-    glUniform1i(glGetUniformLocation(shaderRight, "hair"), 0);
-    glUniform1i(glGetUniformLocation(shaderRight, "hairD"), 1);
-    glUniform1i(glGetUniformLocation(shaderRight, "skin"), 2);
-    glUniform1i(glGetUniformLocation(shaderRight, "eye"), 3);
-
-    glUniformMatrix4fv(glGetUniformLocation(shaderRight, "projectionViewMatrix"), 1, GL_FALSE, glm::value_ptr(projectionViewMatrix));
-    glUniformMatrix4fv(glGetUniformLocation(shaderRight, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrixR));
-    glUniformMatrix4fv(glGetUniformLocation(shaderRight, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalMatrixR));
-    glUniformMatrix4fv(glGetUniformLocation(shaderRight, "eyePosition"), 1, GL_FALSE, glm::value_ptr(eyePosition));
-    glUniform3fv(glGetUniformLocation(shaderRight, "lightPosition"), 1, glm::value_ptr(lightPosition));
-    glUniform1i(glGetUniformLocation(shaderRight, "shine"), shine);
-
+    // Draw STAGE ===========================================================================================
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(1.0f, 1.0f);  
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    glUseProgram(shaderStage);
+    glUniformMatrix4fv(glGetUniformLocation(shaderStage, "projectionViewMatrix"), 1, GL_FALSE, glm::value_ptr(projectionViewMatrix));
+    glUniformMatrix4fv(glGetUniformLocation(shaderStage, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelStage));
+    glUniformMatrix4fv(glGetUniformLocation(shaderStage, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalStage));
+    glUniform3fv(glGetUniformLocation(shaderStage, "eyePosition"), 1, glm::value_ptr(eyePosition));
+    glUniform3fv(glGetUniformLocation(shaderStage, "lightPosition"), 1, glm::value_ptr(lightPosition));
+    glUniform1i(glGetUniformLocation(shaderStage, "shine"), shine);
     glBindVertexArray(vao[2]);
-    glDrawArrays(GL_TRIANGLES, 0, totalVertexCount);
+    glDrawArrays(GL_TRIANGLES, 0, stageVertexCount);
     glBindVertexArray(0);
+
+    glDisable(GL_BLEND);
+    glDisable(GL_POLYGON_OFFSET_FILL); 
+
+    //godrays
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    glDepthMask(GL_FALSE);
+    glUseProgram(godrayShader);
+
+    //stage center
+    DrawGodRay(glm::vec3(0.0f, 7.0f, -3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(1.0f, 0.97f, 0.9f), 0.30f, projectionViewMatrix);
+    
+    //front
+    DrawGodRay(glm::vec3(0.0f, 4.0f, 6.0f), glm::vec3(60.0f, 0.0f, 0.0f), glm::vec3(1.0f, 3.0f, 1.0f), glm::vec3(1.0f, 0.95f, 0.8f), 0.18f, projectionViewMatrix);
+    DrawGodRay(glm::vec3(-4.0f, 4.0f, 6.0f), glm::vec3(60.0f, 0.0f, 15.0f), glm::vec3(0.7f, 3.0f, 0.7f), glm::vec3(1.0f, 0.95f, 0.8f), 0.18f, projectionViewMatrix);
+    DrawGodRay(glm::vec3(4.0f, 4.0f, 6.0f), glm::vec3(60.0f, 0.0f, -15.0f), glm::vec3(0.7f, 3.0f, 0.7f), glm::vec3(1.0f, 0.95f, 0.8f), 0.18f, projectionViewMatrix);
+    
+    //side
+    DrawGodRay(glm::vec3(-8.0f, 4.5f, -3.0f), glm::vec3(0.0f, 0.0f, 40.0f), glm::vec3(1.4f, 2.5f, 1.4f), glm::vec3(1.0f, 0.65f, 0.3f), 0.18f, projectionViewMatrix);
+    DrawGodRay(glm::vec3(8.0f, 4.5f, -3.0f), glm::vec3(0.0f, 0.0f, -40.0f), glm::vec3(1.4f, 2.5f, 1.4f), glm::vec3(1.0f, 0.65f, 0.3f), 0.18f, projectionViewMatrix);
+
+    //back
+    DrawGodRay(glm::vec3(-2.0f, 8.0f, -12.0f), glm::vec3(-40.0f, 0.0f, 0.0f), glm::vec3(0.7f, 2.5f, 0.7f), glm::vec3(1.0f, 0.95f, 0.8f), 0.18f, projectionViewMatrix);
+    DrawGodRay(glm::vec3(2.0f, 8.0f, -12.0f), glm::vec3(-40.0f, 0.0f, 0.0f), glm::vec3(0.7f, 2.5f, 0.7f), glm::vec3(1.0f, 0.95f, 0.8f), 0.18f, projectionViewMatrix);
+    DrawGodRay(glm::vec3(-6.0f, 3.0f, -9.0f), glm::vec3(-60.0f, 0.0f, 15.0f), glm::vec3(0.6f, 2.0f, 0.6f), glm::vec3(0.7f, 0.8f, 1.0f), 0.05f, projectionViewMatrix);
+    DrawGodRay(glm::vec3(6.0f, 3.0f, -9.0f), glm::vec3(-60.0f, 0.0f, -15.0f), glm::vec3(0.6f, 2.0f, 0.6f), glm::vec3(0.7f, 0.8f, 1.0f), 0.05f, projectionViewMatrix);
+
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
 }
 
 /*****************************************************************************/
